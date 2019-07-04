@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Test_ASP.NETCore_WebAPI_EF
+namespace TodoApi
 {
 	public class Program
 	{
