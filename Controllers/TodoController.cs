@@ -16,6 +16,19 @@ namespace TodoApi.Controllers
 			_dbContext = dbContext;
 		}
 
+		// GET api/todo
+		[HttpGet]
+		public ActionResult<string> Welcome()
+		{
+			return @"Welcome to the Todo API. Operations:
+- GET /todo/list (list all todo's)
+- GET /todo/id (get a todo item)
+- POST /todo (add a new todo item)
+- PUT /todo/id (update a todo item)
+- PATCH /todo/id (set the IsComplete property of a todo item)
+- DELETE /todo/id (delete a todo item)";
+		}
+
 		// GET api/todo/list
 		[HttpGet("list")]
 		public ActionResult<IEnumerable<TodoItem>> GetTodoList()
@@ -53,6 +66,36 @@ namespace TodoApi.Controllers
 				return BadRequest();
 
 			_dbContext.Entry(item).State = EntityState.Modified;
+			_dbContext.SaveChanges();
+
+			return NoContent();
+		}
+
+		// PATCH api/todo/{id}?isComplete=bool
+		[HttpPatch("{id}")]
+		public ActionResult PatchTodoItem(long id, [FromQuery] bool isComplete)
+		{
+			var todoItem = _dbContext.TodoItems.Find(id);
+
+			if (todoItem == null)
+				return NotFound();
+
+			todoItem.IsComplete = isComplete;
+			_dbContext.SaveChanges();
+
+			return NoContent();
+		}
+
+		// DELETE api/todo/{id}
+		[HttpDelete("{id}")]
+		public ActionResult DeleteTodoItem(long id)
+		{
+			var todoItem = _dbContext.TodoItems.Find(id);
+
+			if (todoItem == null)
+				return NotFound();
+
+			_dbContext.TodoItems.Remove(todoItem);
 			_dbContext.SaveChanges();
 
 			return NoContent();
