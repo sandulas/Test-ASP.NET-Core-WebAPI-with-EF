@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Models;
@@ -24,8 +25,8 @@ namespace TodoApi.Controllers
 - GET /todo/list (list all todo's)
 - GET /todo/id (get a todo item)
 - POST /todo (add a new todo item)
-- PUT /todo/id (update a todo item)
-- PATCH /todo/id (set the IsComplete property of a todo item)
+- PUT /todo/id (replace a todo item)
+- PATCH /todo/id (update a todo item)
 - DELETE /todo/id (delete a todo item)";
 		}
 
@@ -71,19 +72,26 @@ namespace TodoApi.Controllers
 			return NoContent();
 		}
 
-		// PATCH api/todo/{id}?isComplete=bool
+		// PATCH api/todo/{id}
 		[HttpPatch("{id}")]
-		public ActionResult PatchTodoItem(long id, [FromQuery] bool isComplete)
+		public ActionResult PatchTodoItem(long id, JsonPatchDocument<TodoItem> patchDocument)
 		{
+			if (patchDocument == null)
+				return BadRequest(ModelState);
+
 			var todoItem = _dbContext.TodoItems.Find(id);
 
 			if (todoItem == null)
 				return NotFound();
 
-			todoItem.IsComplete = isComplete;
+			patchDocument.ApplyTo<TodoItem>(todoItem, ModelState);
+
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
 			_dbContext.SaveChanges();
 
-			return NoContent();
+			return new ObjectResult(todoItem);
 		}
 
 		// DELETE api/todo/{id}
