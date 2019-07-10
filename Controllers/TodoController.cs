@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,11 +26,13 @@ namespace TodoApi.Controllers
 		public ActionResult<string> Welcome()
 		{
 			int maxWorkerThreads, maxPortThreads, availableWorkerThreads, availablePortThreads;
-
+			ThreadPool.SetMaxThreads(50, 50);
 			ThreadPool.GetMaxThreads(out maxWorkerThreads, out maxPortThreads);
 			ThreadPool.GetAvailableThreads(out availableWorkerThreads, out availablePortThreads);
 
-			return $@"Welcome to the Todo API (worker threads: { availableWorkerThreads } / { maxWorkerThreads }; I/O threads: { availablePortThreads } / { maxPortThreads }).
+			Task.Delay(100).Wait();
+
+			return $@"Welcome to the Todo API (worker threads: { maxWorkerThreads - availableWorkerThreads } / { maxWorkerThreads }; I/O threads: { maxPortThreads - availablePortThreads } / { maxPortThreads }; Time: { DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff") }).
 Operations:
 - GET /todo/list (list all todo's)
 - GET /todo/id (get a todo item)
